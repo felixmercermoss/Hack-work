@@ -1,0 +1,27 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[packages]
+elasticsearch = "==6.3.1"
+"boto3" = "==1.9.25"
+"requests-aws4auth" = "*"
+ruamel-yaml = "*"
+beautifulsoup4 = "*"
+tqdm = "*"
+pytz = "*"
+gender-guesser = "*"
+certifi==2020.4.5.2
+chardet==3.0.4
+idna==2.9
+isodate==0.6.0
+pyparsing==2.4.7
+rdflib==5.0.0
+requests==2.24.0
+six==1.15.0
+SPARQLWrapper==1.8.5
+urllib3==1.25.9
+
+[requires]
+python_version = "3.7"
