@@ -94,7 +94,10 @@ class enrichedMangoTags():
     def fetch_mango_enrichment(self, uri):
         url = f'http://api.mango-en.virt.ch.bbc.co.uk/topics?uri=https://www.bbc.co.uk{uri}'
         data = requests.get(url)
-        return data.json()['results']
+        if data.status_code is 200:
+            return data.json()['results']
+        else:
+            return []
 
     def _enrich_people_tags(self):
         for tag in self.people_tags:

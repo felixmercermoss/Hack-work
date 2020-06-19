@@ -1,0 +1,53 @@
+PRESS_REVIEW_INDICATORS:
+  - paper review
+  - newspaper review
+  - paper headline
+  - weekly newspaper review
+  - weekly paper review
+  - weekly papers
+  - scotland's paper
+
+NATIONS:
+  - england
+  - scotland
+  - wales
+  - northern-ireland
+
+LEGAL_INDICATORS:
+  - Abuse
+  - Abused
+  - Accused
+  - Accuse
+  - Accuses
+  - Allegation
+  - Alleged
+  - Allege
+  - Assault
+  - Assaulted
+  - Claim
+  - Claimed
+  - Criminal
+  - Defraud
+  - Defrauded
+  - Fraud
+  - Sexual Harassment
+  - Illegal
+  - Investigate
+  - Investigation
+  - Scam
+  - Scammed
+  - Unlawful
+  - Victim
+  - Whistleblower
+
+LEGAL_TAGS:
+  - Alex_Salmond_case
+  - David_Duckenfield_retrial
+  - Defamation_cases
+  - Midrar_Ali_case
+  - El_Chapo_trial
+  - Nazanin_Zaghari-Ratcliffe_case
+  - William_Taylor_murder_trial
+  - Shamima_Begum_case
+  - Jodie_Chesney_murder_trial
+  - Grace_Millane_case
