@@ -17,7 +17,7 @@ def map_score(score):
         return 'neutral'
 
 
-def convert_scores_to_clases(scores):
+def convert_scores_to_clases(scores): # fix this mispelling
     return [map_score(score) for score in scores]
 
 
