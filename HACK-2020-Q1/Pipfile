@@ -1,0 +1,43 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+pytest = "*"
+ruamel-yaml = "*"
+beautifulsoup4 = "*"
+bs4 = "*"
+tqdm = "*"
+pytz = "*"
+gender-guesser = "*"
+asgiref = "*"
+attrs = "*"
+tensorflow = "*"
+transformers = "*"
+certifi = "*"
+chardet = "*"
+idna = "*"
+importlib-metadata = "*"
+isodate = "*"
+more-itertools = "*"
+packaging = "*"
+pluggy = "*"
+py = "*"
+pyparsing = "*"
+rdflib = "*"
+requests = "*"
+six = "*"
+soupsieve = "*"
+SPARQLWrapper = "*"
+sqlparse = "*"
+urllib3 = "*"
+wcwidth = "*"
+zipp = "*"
+torch = "*"
+nltk = "*"
+
+[requires]
+python_version = "3.7"

@@ -3,8 +3,13 @@ import json
 import os
 import pytest
 
+import tqdm
+from src.boolean_features import get_body, football_teams
 
 from src.ares_enrichment import NewsAresItem, SportAresItem
+from src.boolean_features import end_to_end_labelling, category_tags
+from src.entailment import get_label_from_entailment, entailment_categories
+from src.nlp.classifiers.sentiment_classifier import SentimentClassifier, convert_scores_to_clases
 
 PATH_TO_DATA = '/Users/mercef02/Projects/Hack-work/HACK-2020-Q1/data/toy_dataset'
 POLITICAL_PARTIES = ['labour_party',
@@ -19,6 +24,22 @@ POLITICAL_PARTIES = ['labour_party',
                      'alliance_party_of_northern_ireland',
                      'brexit_party',
                      'uk_independence_party']
+
+BOOLEAN_FEATURES = ['isBLM',
+                    'isBrexit',
+                    'isCovid',
+                    'isEducation',
+                    'isImmigration',
+                    'isEconomy'
+                    ]
+
+ENTAILMENT_BOOLEAN_FEATURES = ['isRacial',
+                               'isProtest',
+                               'isLawAndOrder']
+
+
+mapping_classifier = SentimentClassifier(score_normaliser=convert_scores_to_clases)
+
 
 
 def get_list_of_file_paths(PATH_TO_DATA):
@@ -52,11 +73,9 @@ def enrich_raw_ares(file_paths=None):
     if file_paths is None:
         file_paths = get_list_of_file_paths(PATH_TO_DATA)
 
-
-    for file_path in file_paths:
+    for file_path in tqdm(file_paths):
         parsed_article = read_file(file_path)
-        enriched_article = NewsAresItem(ares_dict=parsed_article, mango_enrichment=True)
-        datascapes_features = get_datascapes_features(enriched_article)
+        datascapes_features = get_datascapes_features(parsed_article)
         parsed_article['datascapes_features'] = datascapes_features
         field_path_enriched = generate_enriched_file_path(file_path, write_dir)
         write_file(field_path_enriched, parsed_article)
@@ -67,13 +86,14 @@ def get_party_position(party, political_parties):
     return position
 
 
-def get_datascapes_features(enriched_article):
-    datascapes_features = {}
+def decorate_article_with_score_features(parsed_article, datascapes_features):
+    enriched_article = NewsAresItem(ares_dict=parsed_article, mango_enrichment=True)
     datascapes_features['politicalScore'] = str(enriched_article.political_score)
     datascapes_features['genderScore'] = str(enriched_article.female_proportion)
     party_score = []
     for party in enriched_article.mango_enricher.political_parties_mentioned:
-        score = enriched_article.mango_enricher.political_party_refs.get(party.get('label', party.get('surface_form', '')), 0)
+        score = enriched_article.mango_enricher.political_party_refs.get(
+            party.get('label', party.get('surface_form', '')), 0)
         position = get_party_position(party, enriched_article.mango_enricher.political_parties_referenced)
         p_score = {'name': party.get('label'),
                    'position': position,
@@ -81,6 +101,44 @@ def get_datascapes_features(enriched_article):
         party_score.append(p_score)
 
     datascapes_features['partyScore'] = party_score
+    return datascapes_features
+
+
+def decorate_article_with_boolean_features(parsed_article, datascapes_features):
+    for category in BOOLEAN_FEATURES:
+        datascapes_features[category] = end_to_end_labelling(parsed_article, category_tags[category])
+    return datascapes_features
+
+
+def decorate_article_with_entailment_boolean_features(parsed_article, datascapes_features):
+    text = get_body(parsed_article)
+    for category in ENTAILMENT_BOOLEAN_FEATURES:
+        datascapes_features[category] = get_label_from_entailment(text, entailment_categories[category])
+    return datascapes_features
+
+
+def decorate_article_with_tonality_features(parsed_article, datascapes_features):
+    datascapes_features['sentimentLabel'] = mapping_classifier.calculate_sentiment(
+        parsed_article.combined_body_summary_headline, convert_to_sents=True)
+    return datascapes_features
+
+
+def decorate_article_with_sport_features(parsed_article, datascapes_features):
+    team_features = []
+    for team in football_teams:
+        team_features.append(end_to_end_labelling(parsed_article, football_teams[team], tag_type='uri', use_body=False, use_summary=False, use_tags=False, use_headline=False))
+
+    datascapes_features['premierLeagueTeams'] = team_features
+    return datascapes_features
+
+
+def get_datascapes_features(parsed_article):
+    datascapes_features = {}
+    datascapes_features = decorate_article_with_score_features(parsed_article, datascapes_features)
+    datascapes_features = decorate_article_with_boolean_features(parsed_article, datascapes_features)
+    datascapes_features = decorate_article_with_entailment_boolean_features(parsed_article, datascapes_features)
+    datascapes_features = decorate_article_with_tonality_features(parsed_article, datascapes_features)
+    datascapes_features = decorate_article_with_sport_features(parsed_article, datascapes_features)
 
     return datascapes_features
 
