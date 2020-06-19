@@ -1,6 +1,8 @@
 import glob
 import json
 import os
+import pytest
+
 
 from src.ares_enrichment import NewsAresItem, SportAresItem
 
@@ -33,19 +35,26 @@ def write_file(file_name, obj):
     with open(file_name, 'w') as fo:
         json.dump(obj, fo)
 
-def enrich_raw_ares():
+
+def read_file(file_path):
+    with open(file_path, 'r') as fo:
+        parsed_article = json.load(fo)
+    return parsed_article
+
+def enrich_raw_ares(file_paths=None):
     """
     Loop through each article in data directory, then read data, enrich the data then write the data to a new file
     """
     write_dir = PATH_TO_DATA + "_feature_enriched"
     if not os.path.exists(write_dir):
         os.makedirs(write_dir)
-    file_paths = get_list_of_file_paths(PATH_TO_DATA)
+
+    if file_paths is None:
+        file_paths = get_list_of_file_paths(PATH_TO_DATA)
+
 
     for file_path in file_paths:
-        with open(file_path, 'r') as fo:
-            parsed_article = json.load(fo)
-
+        parsed_article = read_file(file_path)
         enriched_article = NewsAresItem(ares_dict=parsed_article, mango_enrichment=True)
         datascapes_features = get_datascapes_features(enriched_article)
         parsed_article['datascapes_features'] = datascapes_features
@@ -71,8 +80,14 @@ def get_datascapes_features(enriched_article):
                    'score': str(score)}
         party_score.append(p_score)
 
+    datascapes_features['partyScore'] = party_score
+
     return datascapes_features
 
 
 if __name__ == '__main__':
     enrich_raw_ares()
+
+
+def test_enrich_raw_ares():
+    enrich_raw_ares(file_paths=['/Users/mercef02/Projects/Hack-work/HACK-2020-Q1/data/toy_dataset/14295731'])
