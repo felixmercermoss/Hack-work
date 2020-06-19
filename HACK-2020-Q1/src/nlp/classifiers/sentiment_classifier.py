@@ -14,7 +14,7 @@ def map_score(score):
     elif -0.5 >= score:
         return 'negative'
     else:
-        return neutral
+        return 'neutral'
 
 
 def convert_scores_to_clases(scores):
@@ -47,7 +47,7 @@ class SentimentClassifier:
         """
         Lazy use of numpy...
         """
-        return np.mean(scores)
+        return np.mean(scores, keepdims=True)
 
     def calculate_sentiment(self, texts, convert_to_sents=False, aggregate_scores=True):
         if convert_to_sents:
@@ -71,3 +71,4 @@ if __name__ == '__main__':
     negative_sentences = ["It was OK", "A really bad, horrible book."]
     mapping_classifier = SentimentClassifier(score_normaliser=convert_scores_to_clases)
     assert mapping_classifier.calculate_sentiment(negative_sentences, aggregate_scores=False) == ['mildy_positive', 'negative']
+    assert mapping_classifier.calculate_sentiment(negative_sentences, aggregate_scores=True) == ['mildy_negative']
