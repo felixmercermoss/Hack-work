@@ -5,10 +5,9 @@ from datetime import datetime
 import pytz
 
 # Datascapes-dev local imports
-from mapper.dict_utils import convert_dict_underscore_keys_to_camelcase, remove_empty_elements
-from mapper.mango import enrichedMangoTags, POLITICAL_PARTIES
-from processing.html_cleaning_tools import clean_html_markup
-from utils.utils import load_config_file
+from src.dict_utils import convert_dict_underscore_keys_to_camelcase, remove_empty_elements
+from src.mango import enrichedMangoTags, POLITICAL_PARTIES
+from src.utils import load_config_file, clean_html_markup
 
 # news-wsoj-english-content-similarity-vectorisation-service local imports
 # from html_cleaning_tools import clean_html_markup
