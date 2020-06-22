@@ -1,6 +1,7 @@
 import os
 import sys
 
+import numpy as np
 import tensorflow as tf
 from transformers import RobertaTokenizer, TFRobertaForQuestionAnswering
 
@@ -33,11 +34,7 @@ def get_premise_hypothesis_entailment_probability(premise, hypothesis, tokenizer
     true_prob = probs[:,1].item()
     return true_prob
 
-#%%
-
-# infer whether article belongs to category using NLI
-
-def get_label_from_entailment(article_text, category_tags, tokenizer=tokenizer, model=model, threshold=0.5):
+def get_label_from_entailment(article_text, category_tags, tokenizer=tokenizer, model=model, threshold=0.5, max_len=1024):
     '''
     Function applies a binary label to an article about whether it discusses the category, defined by a list of category keywords.
     Args:
@@ -52,9 +49,7 @@ def get_label_from_entailment(article_text, category_tags, tokenizer=tokenizer, 
     hypothesis = f'discusses {category_tags[0]}'
     for t in category_tags[1:]:
         hypothesis += f' or {t}'
-    print(f'Hypothesis: "{hypothesis}"')
-    probability = get_premise_hypothesis_entailment_probability(article_text, hypothesis, tokenizer, model)
+    probability = get_premise_hypothesis_entailment_probability(article_text[:np.minimum(max_len, len(article_text))], hypothesis, tokenizer, model)
     if probability >= threshold:
         return True
     return False
-

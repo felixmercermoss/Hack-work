@@ -1,14 +1,17 @@
 import glob
 import json
 import os
+
+import numpy as np
 import pytest
 
-import tqdm
+from tqdm import tqdm
 from src.boolean_features import get_body, football_teams
 
 from src.ares_enrichment import NewsAresItem, SportAresItem
 from src.boolean_features import end_to_end_labelling, category_tags
 from src.entailment import get_label_from_entailment, entailment_categories
+from src.nlp.classifiers.sarcasm_classifier import SentenceBertVectorizer, SarcasmClassifier
 from src.nlp.classifiers.sentiment_classifier import SentimentClassifier, convert_scores_to_clases
 
 PATH_TO_DATA = '/Users/mercef02/Projects/Hack-work/HACK-2020-Q1/data/toy_dataset'
@@ -39,7 +42,9 @@ ENTAILMENT_BOOLEAN_FEATURES = ['isRacial',
 
 
 mapping_classifier = SentimentClassifier(score_normaliser=convert_scores_to_clases)
-
+vectorizer = SentenceBertVectorizer(model_name='deepset/sentence_bert')
+sarcasm_classifier = SarcasmClassifier(None, vectorizer)
+sarcasm_classifier.load_classifier('nlp/classifiers/sarcasm_clf.pkl')
 
 
 def get_list_of_file_paths(PATH_TO_DATA):
@@ -73,12 +78,14 @@ def enrich_raw_ares(file_paths=None):
     if file_paths is None:
         file_paths = get_list_of_file_paths(PATH_TO_DATA)
 
-    for file_path in tqdm(file_paths):
-        parsed_article = read_file(file_path)
-        datascapes_features = get_datascapes_features(parsed_article)
-        parsed_article['datascapes_features'] = datascapes_features
-        field_path_enriched = generate_enriched_file_path(file_path, write_dir)
-        write_file(field_path_enriched, parsed_article)
+    with tqdm(range(len(file_paths))) as pbar:
+        for file_path in file_paths[:1]:
+            pbar.update(1)
+            parsed_article = read_file(file_path)
+            datascapes_features = get_datascapes_features(parsed_article)
+            parsed_article['datascapes_features'] = datascapes_features
+            field_path_enriched = generate_enriched_file_path(file_path, write_dir)
+            write_file(field_path_enriched, parsed_article)
 
 
 def get_party_position(party, political_parties):
@@ -86,8 +93,7 @@ def get_party_position(party, political_parties):
     return position
 
 
-def decorate_article_with_score_features(parsed_article, datascapes_features):
-    enriched_article = NewsAresItem(ares_dict=parsed_article, mango_enrichment=True)
+def decorate_article_with_score_features(enriched_article, datascapes_features):
     datascapes_features['politicalScore'] = str(enriched_article.political_score)
     datascapes_features['genderScore'] = str(enriched_article.female_proportion)
     party_score = []
@@ -132,12 +138,19 @@ def decorate_article_with_sport_features(parsed_article, datascapes_features):
     return datascapes_features
 
 
+def decorate_article_with_sarcasm_features(parsed_article, datascapes_features):
+    datascapes_features['sarcasmLabel'] = np.mean(sarcasm_classifier.predict(parsed_article.combined_body_summary_headline))
+    return datascapes_features
+
+
 def get_datascapes_features(parsed_article):
+    enriched_article = NewsAresItem(ares_dict=parsed_article, mango_enrichment=True)
     datascapes_features = {}
-    datascapes_features = decorate_article_with_score_features(parsed_article, datascapes_features)
+    datascapes_features = decorate_article_with_score_features(enriched_article, datascapes_features)
     datascapes_features = decorate_article_with_boolean_features(parsed_article, datascapes_features)
     datascapes_features = decorate_article_with_entailment_boolean_features(parsed_article, datascapes_features)
-    datascapes_features = decorate_article_with_tonality_features(parsed_article, datascapes_features)
+    datascapes_features = decorate_article_with_tonality_features(enriched_article, datascapes_features)
+    datascapes_features = decorate_article_with_sarcasm_features(enriched_article, datascapes_features)
     datascapes_features = decorate_article_with_sport_features(parsed_article, datascapes_features)
 
     return datascapes_features

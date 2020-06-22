@@ -38,6 +38,7 @@ wcwidth = "*"
 zipp = "*"
 torch = "*"
 nltk = "*"
+sklearn = "*"
 
 [requires]
 python_version = "3.7"
