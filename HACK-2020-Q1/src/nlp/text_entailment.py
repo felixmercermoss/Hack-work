@@ -58,10 +58,12 @@ def get_premise_hypothesis_entailment(premise, hypothesis, tokenizer, model):
     true_prob = probs[:,1].item() * 100
     print(f'Probability that the label is true: {true_prob:0.2f}%')
 
-model_name = 'facebook/bart-large-mnli'
-model, tokenizer = load_bart_model_tokenizer(model_name)
+if __name__ == '__main__':
+    model_name = 'facebook/bart-large-mnli'
 
-premise = "Oriel College's governors vote to take down the statue of the Victorian colonialist Cecil Rhodes."
-hypothesis = 'References the diamond trade'
+    model, tokenizer = load_bart_model_tokenizer(model_name)
 
-get_premise_hypothesis_entailment(premise, hypothesis, tokenizer, model)
+    premise = "Oriel College's governors vote to take down the statue of the Victorian colonialist Cecil Rhodes."
+    hypothesis = 'References the diamond trade'
+
+    get_premise_hypothesis_entailment(premise, hypothesis, tokenizer, model)

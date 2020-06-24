@@ -3,11 +3,11 @@ import sys
 
 import numpy as np
 import tensorflow as tf
-from transformers import RobertaTokenizer, TFRobertaForQuestionAnswering
 
-from src.nlp.text_entailment import *
+from src.nlp.text_entailment import load_bart_model_tokenizer
 from src.boolean_features import get_body
 from src.nlp.text_entailment import get_premise_hypothesis_entailment
+from src.timer import Timer
 
 module_path = os.path.abspath(os.path.join('../src'))
 if module_path not in sys.path:
@@ -18,8 +18,10 @@ entailment_categories = {'isRacial': ['race', 'racism', 'blm', 'black lives matt
                          'isLawAndOrder': ['police', 'crime', 'prison', 'court', 'law enforcement', 'officer', 'trial', 'charged', ]}
 
 
-tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
-model = TFRobertaForQuestionAnswering.from_pretrained('roberta-base')
+#with Timer('Instantiating Roberta Q&A'):
+#    tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
+#    model = TFRobertaForQuestionAnswering.from_pretrained('roberta-base')
+model_name = 'facebook/bart-large-mnli'
 model, tokenizer = load_bart_model_tokenizer(model_name)
 
 
@@ -50,6 +52,4 @@ def get_label_from_entailment(article_text, category_tags, tokenizer=tokenizer, 
     for t in category_tags[1:]:
         hypothesis += f' or {t}'
     probability = get_premise_hypothesis_entailment_probability(article_text[:np.minimum(max_len, len(article_text))], hypothesis, tokenizer, model)
-    if probability >= threshold:
-        return True
-    return False
+    return probability >= threshold

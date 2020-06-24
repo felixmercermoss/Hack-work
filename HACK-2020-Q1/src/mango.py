@@ -24,15 +24,15 @@ POLITICAL_PARTIES = ['labour_party',
                      'alliance_party_of_northern_ireland',
                      'brexit_party',
                      'uk_independence_party']
+                     
 gender_predictor = gender.Detector(case_sensitive=False)
 
 POLITICAL_MAPPER = {'left wing': -2,
                     'centre left': -1,
-                    'center left': -1,
                     'centrism': 0,
-                    'centre right': 1,
                     'center right': 1,
                     'right wing': 2}
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logging.basicConfig()
@@ -258,5 +258,3 @@ def request_gender_from_genderize(first_name):
         return {'value': gender, 'probability': data.get('gender')}
     else:
         return {'value': None}
-
-

@@ -2,6 +2,7 @@ import json
 
 import requests
 
+
 category_tags = {
     'isBLM': {'should': ['Black Lives Matter', 'BLM'],
               'should_not': []},
@@ -82,13 +83,22 @@ def end_to_end_labelling(article, category_tags, tag_type='label', use_tags=True
     return check_text_for_keywords(text, category_tags)
 
 
+autotagger_cache = {}
+
 def get_results_from_autotagger(asset_uri, api=starfruit_api):
     """
     Query starfruit or mango api with article URI to return auto-generated content tags.
     """
-    response = requests.get(f'{api}/topics?uri=https://www.bbc.co.uk{asset_uri}')
-    body = response.content
-    return json.loads(body.decode("utf-8"))
+    uri = f'{api}/topics?uri=https://www.bbc.co.uk{asset_uri}'
+    cached = autotagger_cache.setdefault(uri, None)
+    if cached:
+        return cached
+    else:
+        response = requests.get(uri)
+        body = response.content
+        decoded = json.loads(body.decode("utf-8"))
+        autotagger_cache[uri] = decoded
+        return decoded
 
 
 def parse_labels_from_starfruit_response(response, return_type='label'):
@@ -100,7 +110,6 @@ def parse_labels_from_starfruit_response(response, return_type='label'):
         return [l.get(return_type, {}).get('en-gb', '') for l in all_labels]
     elif return_type == 'uri':
         return [l.get('@id', '') for l in all_labels]
-
 
 
 def parse_labels_from_mango_response(response, return_type='label'):
@@ -117,7 +126,6 @@ def parse_labels_from_mango_response(response, return_type='label'):
                     return uri + "#id"
 
         return ''
-
 
 def get_tags(article):
     """
